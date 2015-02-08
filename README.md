@@ -153,6 +153,7 @@ Additionally, each validator may contain a collection of zero or more **validati
 
 The following is an example of a schema written in JSON format.  Notice that the names of validators, fields, etc are used as keys.  This is a possible, but not necessary, implementation of the standard.
 
+```
 {
     "user_name" : {
         "validators" : {
@@ -239,3 +240,4 @@ The following is an example of a schema written in JSON format.  Notice that the
         }      
     }
 }
+```
