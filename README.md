@@ -54,6 +54,10 @@ Sanitize this field by escaping all HTML entities (`'"<>&` and characters with A
 
 Sanitize this field by applying an HTML purification library, for example [HTMLPurifier](http://htmlpurifier.org/), to remove any potentially dangerous HTML code.
 
+#### `raw`
+
+Do not sanitize this field.  Will be overridden if additional sanitizers are specified for this field.
+
 ### Validators
 
 A validator consists of a **validator name**, and a set of validator attributes.  The implementation may set one or more of these validators as a default, if none are specified.
