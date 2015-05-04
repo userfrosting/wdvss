@@ -148,9 +148,8 @@ Specifies that the value of the field must **not** be equivalent to the value of
 
 ### Validator Messages
 
-Additionally, each validator may contain a collection of zero or more **validation messages** assigned to a `messages` attribute.  These messages can be used by the implementation to indicate the specific point of failure during the validation process.  Each validation message shall consist of a `locale`, and a `message`.
+Additionally, each validator may contain a **validation message** assigned to a `message` attribute.  This message can be used by the implementation to indicate the specific point of failure during the validation process.  To implement multi-language support, it is suggested to use a "message id" tag instead of the message itself, and then use an appropriate mapping library to render the message in the desired language.
 
-- `locale` (required): A valid [IETF language tag](https://en.wikipedia.org/wiki/IETF_language_tag).  The implementation can use this to determine which message to display to a user, based on their language and location.  A `default` locale may be specified as a fallback.
 - `message` (required): A string containing the message to display to the user.
 
 ## Examples
@@ -164,42 +163,40 @@ The following is an example of a schema written in JSON format.  Notice that the
             "length" : {
                 "min" : 1,
                 "max" : 50,
-                "messages" : {
-                    "default" : "'Username' must be between 1 and 50 characters long.",
-                    "es_US" : "Su nombre de usuario debe estar entre 1 y 50 caracteres de longitud"
-                }
+                "message" : "ACCOUNT_USER_CHAR_LIMIT"
             },
             "required" : {
-                "messages" : {
-                    "default" : "'User name' is required.",
-                    "es_US" : "Por favor, ingrese su nombre de usuario"
-                }
+                "message" : "ACCOUNT_SPECIFY_USERNAME"
             }
         },
         "sanitizers" : {
             "escape" : {}
+        }        
+    },
+    "display_name" : {
+        "validators" : {
+            "length" : {
+                "min" : 1,
+                "max" : 50,
+                "message" : "ACCOUNT_DISPLAY_CHAR_LIMIT"
+            },
+            "required" : {
+                "message" : "ACCOUNT_SPECIFY_DISPLAY_NAME"
+            }
         }
-    },       
+    },          
     "email" : {
         "validators" : {
             "required" : {
-                "messages" : {
-                    "default" : "You must specify an email address."
-                }
+                "message" : "ACCOUNT_SPECIFY_EMAIL"
             },
             "length" : {
                 "min" : 1,
                 "max" : 150,
-                "messages" : {
-                    "default" : "'Email' must be between 1 and 150 characters long.",
-                    "es_US" : "Dirección de correo electrónico debe estar entre 1 y 150 caracteres de longitud"
-                }
+                "message" : "ACCOUNT_EMAIL_CHAR_LIMIT"
             },
             "email" : {
-                "messages" : {
-                    "default" : "'Email' must be a valid email address.",
-                    "es_US" : "Dirección de correo electrónico no válida"
-                }
+                "message" : "ACCOUNT_INVALID_EMAIL"
             }
         }
     },
@@ -212,36 +209,47 @@ The following is an example of a schema written in JSON format.  Notice that the
     "password" : {
         "validators" : {
             "required" : {
-                "messages" : {
-                    "default" : "'Password' is required.",
-                    "es_US" : "Por favor, ingrese su contraseña"
-                }
+                "message" : "ACCOUNT_SPECIFY_PASSWORD"
+            },
+            "matches" : {
+                "field" : "passwordc",
+                "message" : "ACCOUNT_PASS_MISMATCH"
+            },            
+            "length" : {
+                "min" : 8,
+                "max" : 50,
+                "message" : "ACCOUNT_PASS_CHAR_LIMIT"
+            }
+        },
+        "sanitizers" : {
+            "raw" : {}
+        }    
+    },
+    "passwordc" : {
+        "validators" : {
+            "required" : {
+                "message" : "ACCOUNT_SPECIFY_PASSWORD"
+            },
+            "matches" : {
+                "field" : "password",
+                "message" : "ACCOUNT_PASS_MISMATCH"
             },
             "length" : {
                 "min" : 8,
                 "max" : 50,
-                "messages" : {
-                    "default" : "'Password' must be between 8 and 50 characters long.",
-                    "es_US" : "La contraseña debe tener entre 8 y 50 caracteres de longitud"
-                }
-            },
-            "matches" : {
-                "field_name" : "password_confirm",
-                "messages" : {
-                    "default" : "'Password' and 'Confirm password' must have the same value.",
-                }
+                "message" : "ACCOUNT_PASS_CHAR_LIMIT"
             }
-        }      
+        },
+        "sanitizers" : {
+            "raw" : {}
+        }    
     },
-    "password_confirm" : {
+    "captcha" : {
         "validators" : {
-            "matches" : {
-                "field_name" : "password",
-                "messages" : {
-                    "default" : "'Password' and 'Confirm password' must have the same value.",
-                }
+            "required" : {
+                "message" : "Please enter the captcha code."
             }
-        }      
+        }
     }
 }
 ```
