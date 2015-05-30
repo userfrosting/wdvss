@@ -138,13 +138,13 @@ Specifies that the value of the field must not be equivalent to any members of a
 
 Specifies that the value of the field must be equivalent to the value of another field.  The definition of equivalence shall be left to the implementation.
 
-- `field_name` (required): The name of the other field that this field must match.  If the value of the other field is not specified in the request, this validator may attempt to match the default value, if specified.
+- `field` (required): The name of the other field that this field must match.  If the value of the other field is not specified in the request, this validator may attempt to match the default value, if specified.
 
 #### `not_matches`
 
 Specifies that the value of the field must **not** be equivalent to the value of another field.  The definition of equivalence shall be left to the implementation.
 
-- `field_name` (required): The name of the other field that this field must **not** match.  If the value of the other field is not specified in the request, this validator may attempt to match the default value, if specified.
+- `field` (required): The name of the other field that this field must **not** match.  If the value of the other field is not specified in the request, this validator may attempt to match the default value, if specified.
 
 ### Validator Messages
 
