@@ -1,22 +1,24 @@
-# Web Data Validation and Sanitization Standard (WDVSS)
+# Web Data Validation Standard Schema (WDVSS)
+
+*Revision 2.0, 2016 June 1*
 
 ## Overview
 
-The goal of this project is to create an interoperable standard for validating and sanitizing data exchanged over the web.  In particular, it focuses on data submitted to a web server via HTTP GET and POST requests.  It should be flexible enough to accommodate both server-side and client-side validation.
+The goal of this project is to create an interoperable standard for validating data exchanged over the web.  In particular, it focuses on data submitted to a web server via HTTP GET and POST requests.  It should be flexible enough to accommodate both server-side and client-side validation.
 
 ## Background
 
-Validating and sanitizing client data is an essential part of modern web applications and services.  Proper server-side sanitization and validation is critical to server security, protecting web servers and their users from SQL injection, cross-site scripting (XSS), and other malicious attacks.  Validation is also an important aspect of user experience, communicating and enforcing the requirements of the underlying data model.  It is suprising, then, that no standard currently exists for how this should be done.
+Validating client data is an essential part of modern web applications and services.  Proper server-side validation is critical to server security, protecting web servers and their users from SQL injection, cross-site scripting (XSS), and other malicious attacks.  Validation is also an important aspect of user experience, communicating and enforcing the requirements of the underlying data model.  It is suprising, then, that no standard currently exists for how this should be done.
 
 ## Scope
 
-Although the examples used in this document will be presented in the [JavaScript Object Notation (JSON)](http://www.json.org/) format, the standard itself is not meant to be tied to any particular data format.  The standard shall be confined to validating and sanitizing HTTP GET and POST requests - other types of requests and communication protocols such as FTP, POP, etc are not addressed by this standard.
+Although the examples used in this document will be presented in the [JavaScript Object Notation (JSON)](http://www.json.org/) format, the standard itself is not meant to be tied to any particular data format.  The standard shall be confined to validating HTTP GET and POST requests - other types of requests and communication protocols such as FTP, POP, etc are not addressed by this standard.
 
 ## The Standard
 
 ### Schema
 
-A **schema** is a document that partially or fully specifies the rules for validating and sanitizing data submitted by a client to a server as part of a single HTTP POST or GET request.
+A **schema** is a document that partially or fully specifies the rules for validating data submitted by a client to a server as part of a single HTTP POST or GET request.
 
 A schema shall consist of a collection of **fields**.  Each field refers to a distinct piece of data being submitted as part of the request. 
 
@@ -24,9 +26,9 @@ A schema shall consist of a collection of **fields**.  Each field refers to a di
 
 A field consists of a unique **field name**, along with a set of attributes.  The following attributes are defined:
 
-#### `sanitizers` (optional)
+#### `transformations` (optional)
 
-The `sanitizers` attribute specifies an ordered list of **sanitizers** to be applied to the field.
+The `transformations` attribute specifies an ordered list of **data transformations** to be applied to the field.
 
 #### `validators` (optional)
 
@@ -34,29 +36,27 @@ The `validators` attribute specifies an ordered list of **validators** to be app
 
 #### `default` (optional)
 
-The `default` attribute specifies a default value to be used if the field has not been specified in the HTTP request.  When a default value is applied, the sanitizers and validators for the field shall be ignored.
+The `default` attribute specifies a default value to be used if the field has not been specified in the HTTP request.  When a default value is applied, the data transformations and validators for the field shall be ignored.
 
-### Sanitizers
+### Transformations
 
-A sanitizer consists of a **sanitizer name**, and a set of sanitizer attributes.  The implementation may set one or more of these sanitizers as a default, if none are specified.
-
-The following sanitizers are currently supported:
+Data transformations should be applied before validation, in the specified order.  The following transformations are currently supported:
 
 #### `purge`
 
-Sanitize this field by removing all HTML entities (`'"<>&` and characters with ASCII value less than 32)
+Remove all HTML entities (`'"<>&` and characters with ASCII value less than 32) from this field.
 
 #### `escape`
 
-Sanitize this field by escaping all HTML entities (`'"<>&` and characters with ASCII value less than 32)
+Escape all HTML entities (`'"<>&` and characters with ASCII value less than 32).
 
 #### `purify`
 
-Sanitize this field by applying an HTML purification library, for example [HTMLPurifier](http://htmlpurifier.org/), to remove any potentially dangerous HTML code.
+Apply an HTML purification library, for example [HTMLPurifier](http://htmlpurifier.org/), to remove any potentially dangerous HTML code.
 
-#### `raw`
+#### `trim`
 
-Do not sanitize this field.  Will be overridden if additional sanitizers are specified for this field.
+Remove any leading and trailing whitespace.
 
 ### Validators
 
@@ -146,6 +146,14 @@ Specifies that the value of the field must **not** be equivalent to the value of
 
 - `field` (required): The name of the other field that this field must **not** match.  If the value of the other field is not specified in the request, this validator may attempt to match the default value, if specified.
 
+#### `no_leading_whitespace`
+
+Specifies that the value of the field must not have any leading whitespace characters.
+
+#### `no_trailing_whitespace`
+
+Specifies that the value of the field must not have any trailing whitespace characters.
+
 ### Validator Messages
 
 Additionally, each validator may contain a **validation message** assigned to a `message` attribute.  This message can be used by the implementation to indicate the specific point of failure during the validation process.  To implement multi-language support, it is suggested to use a "message id" tag instead of the message itself, and then use an appropriate mapping library to render the message in the desired language.
@@ -169,8 +177,7 @@ The following is an example of a schema written in JSON format.  Notice that the
                 "message" : "ACCOUNT_SPECIFY_USERNAME"
             }
         },
-        "sanitizers" : {
-            "escape" : {}
+        "transformations" : [ "escape", "trim" ]
         }        
     },
     "display_name" : {
@@ -202,9 +209,7 @@ The following is an example of a schema written in JSON format.  Notice that the
     },
     "message" : {
         "default" : "My message", 
-        "sanitizers" : {
-            "purify" : {}
-        }
+        "transformations" : ["purify", "trim"]
     },
     "password" : {
         "validators" : {
@@ -220,9 +225,6 @@ The following is an example of a schema written in JSON format.  Notice that the
                 "max" : 50,
                 "message" : "ACCOUNT_PASS_CHAR_LIMIT"
             }
-        },
-        "sanitizers" : {
-            "raw" : {}
         }    
     },
     "passwordc" : {
@@ -239,10 +241,7 @@ The following is an example of a schema written in JSON format.  Notice that the
                 "max" : 50,
                 "message" : "ACCOUNT_PASS_CHAR_LIMIT"
             }
-        },
-        "sanitizers" : {
-            "raw" : {}
-        }    
+        }  
     },
     "captcha" : {
         "validators" : {
